@@ -13,6 +13,8 @@ def setup_proxy():
         proxies = {
             "http": proxy_string,
             "https": proxy_string,
+            'username': username,
+            'password': password
         }
         return proxies
     else:
