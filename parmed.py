@@ -1,19 +1,20 @@
-import os
 import json
 import pandas as pd
+import asyncio
 from dateutil.utils import today
 
 from utils import make_http_request
+from browser import get_parmed_token
 
 
-def get_request_parameters():
+def get_request_parameters(access_token):
     """Defines and returns the URL, headers, and data payload for the API request."""
     url = 'https://api.cardinalhealth.com/pharmacon/product/kinray/external/v1/product'
 
     headers = {
         'accept': 'application/json, text/plain, */*',
         'accept-language': 'en-US,en;q=0.9',
-        'access-token': os.getenv('PARMED_ACCESS_TOKEN'),
+        'access-token': access_token,
         'agent-type': 'Desktop, Mac, Chrome 136.0.0.0',
         'content-type': 'application/json',
         'origin': 'https://www.parmed.com',
@@ -65,12 +66,13 @@ def process_response_and_save(response, csv_filename):
     else:
         print("No response to process.")
 
-def main():
+async def main():
     """Main function to orchestrate the script execution."""
     today_timestamp = today().strftime('%Y-%m-%d')
     csv_filename = f'parmed-{today_timestamp}.csv'
 
-    url, headers, data = get_request_parameters()
+    access_token = await get_parmed_token()
+    url, headers, data = get_request_parameters(access_token)
     response = make_http_request(method="POST", url=url, headers=headers, data=data)
     process_response_and_save(response, csv_filename)
 
@@ -79,4 +81,4 @@ if __name__ == "__main__":
     import dotenv
     dotenv.load_dotenv()
 
-    main()
+    asyncio.run(main())

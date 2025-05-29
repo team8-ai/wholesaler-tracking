@@ -3,7 +3,8 @@ import dotenv
 import asyncio
 from langchain_openai import ChatOpenAI
 from browser_use import Agent, BrowserSession
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, BrowserContext
+
 from utils import setup_proxy
 
 dotenv.load_dotenv()
@@ -13,16 +14,17 @@ llm = ChatOpenAI(model="gpt-4.1", temperature=0.0)
 captured_token = None
 token_found = False
 
-async def handle_request(route):
+async def handle_request(route, browser_context: BrowserContext):
     global captured_token
     global token_found
     request = route.request
     if "https://api.cardinalhealth.com/" in request.url:
         headers = await request.all_headers()
-        if "access-token" in headers:
+        if "access-token" in headers and not token_found:
             captured_token = headers["access-token"]
             token_found = True
             print(f"Access Token captured (access-token): {captured_token}")
+            await browser_context.close()
             return
         print(f"Token not found in header.")
     await route.continue_()
@@ -41,27 +43,27 @@ def get_proxy_settings():
     return launch_options
 
 
-async def main():
+async def get_parmed_token():
     global captured_token
     async with async_playwright() as p:
         launch_options = get_proxy_settings()
 
         browser_session_instance = BrowserSession(
             playwright=p,
-            headless=False,
+            headless=True,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
             launch_options=launch_options
         )
 
         await browser_session_instance.start()
-        await browser_session_instance.browser_context.route("**/*", handle_request)
+        await browser_session_instance.browser_context.route("**/*", lambda route: handle_request(route, browser_session_instance.browser_context))
 
         # Navigate using the page obtained from the session
         page = await browser_session_instance.get_current_page()
         if not page:
             print("ERROR: Could not get current page from browser_session after start().")
             return
-        
+
         print(f"Navigating to https://www.parmed.com/home using page from BrowserSession...")
         await page.goto(
             'https://www.parmed.com/home',
@@ -80,7 +82,8 @@ async def main():
         await agent.run()
         print("Agent finished.")
         print(f"Final captured token: {captured_token}")
+        return captured_token
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(get_parmed_token())
