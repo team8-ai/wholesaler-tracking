@@ -1,4 +1,4 @@
-# Scraper Script
+# wholesaler-tracking
 
 This script is designed to fetch data from Parmed and Blupax websites and save it into CSV files.
 
@@ -40,15 +40,16 @@ The script needs a few extra libraries to run. You can install them using a tool
 
 ### Step 4: Set up Environment Variables
 
-The `parmed.py` script requires an `ACCESS_TOKEN`. You need to create a file named `.env` in the same folder as your scripts and add your token there.
+The `parmed.py` script requires an `ACCESS_TOKEN`. An example file named `.env.sample` is provided. You should create a copy of this file named `.env` in the same folder as your scripts and add your token there.
 
 1.  Open a simple text editor (like TextEdit or VS Code if you have it).
-2.  Create a new file.
-3.  Type the following line, replacing `YOUR_ACCESS_TOKEN_HERE` with your actual token:
+2.  Copy the `.env.sample` file and rename the copy to `.env`.
+3.  Open the new `.env` file.
+4.  Replace `YOUR_ACCESS_TOKEN_HERE` with your actual token:
     ```
     PARMED_ACCESS_TOKEN=YOUR_ACCESS_TOKEN_HERE
     ```
-4.  Save the file as `.env` in the same folder where you saved the script files.
+5.  Save the `.env` file.
 
 ### Step 5: Run the Script
 
