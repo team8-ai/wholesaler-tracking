@@ -41,7 +41,7 @@ def extract_and_process_data(response, csv_filename):
                 df = pd.DataFrame(data)
 
                 # Save DataFrame to CSV
-                df.to_csv(csv_filename, index=False)
+                df.to_csv(f'./data/{csv_filename}', index=False)
                 print(f"Data saved to {csv_filename}")
 
             except json.JSONDecodeError as e:

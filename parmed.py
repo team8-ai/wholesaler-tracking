@@ -57,7 +57,7 @@ def process_response_and_save(response, csv_filename):
             print(f"Found {len(item_list)} items under 'itemList'.")
             df = pd.DataFrame(item_list)
 
-            df.to_csv(csv_filename, index=False)
+            df.to_csv(f'./data/{csv_filename}', index=False)
             print(f"Data saved to {csv_filename}")
 
         except json.JSONDecodeError:
