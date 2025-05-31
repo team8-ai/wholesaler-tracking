@@ -14,7 +14,7 @@ llm = ChatOpenAI(model="gpt-4.1", temperature=0.0)
 captured_token = None
 token_found = False
 
-async def handle_request(route, browser_context: BrowserContext):
+async def handle_request(route, browser_context: BrowserContext | None):
     global captured_token
     global token_found
     request = route.request
@@ -24,7 +24,8 @@ async def handle_request(route, browser_context: BrowserContext):
             captured_token = headers["access-token"]
             token_found = True
             print(f"Access Token captured (access-token): {captured_token}")
-            await browser_context.close()
+            if browser_context:
+                await browser_context.close()
             return
         print(f"Token not found in header.")
     await route.continue_()
@@ -48,6 +49,9 @@ async def get_parmed_token():
     async with async_playwright() as p:
         launch_options = get_proxy_settings()
 
+        if launch_options is None:
+            return None # Stop execution if proxy settings are not available
+
         browser_session_instance = BrowserSession(
             playwright=p,
             headless=True,
@@ -56,13 +60,16 @@ async def get_parmed_token():
         )
 
         await browser_session_instance.start()
-        await browser_session_instance.browser_context.route("**/*", lambda route: handle_request(route, browser_session_instance.browser_context))
 
-        # Navigate using the page obtained from the session
         page = await browser_session_instance.get_current_page()
+
         if not page:
             print("ERROR: Could not get current page from browser_session after start().")
-            return
+            await browser_session_instance.stop() # Ensure browser is closed
+            return None
+
+        # Use the page object to set up route handling
+        await page.route("https://api.cardinalhealth.com/**", lambda route: handle_request(route, page.context))
 
         print(f"Navigating to https://www.parmed.com/home using page from BrowserSession...")
         await page.goto(
@@ -81,6 +88,10 @@ async def get_parmed_token():
         print("Running agent to log in...")
         await agent.run()
         print("Agent finished.")
+
+        # Ensure the browser session is stopped after the task is complete
+        await browser_session_instance.stop()
+
         print(f"Final captured token: {captured_token}")
         return captured_token
 
