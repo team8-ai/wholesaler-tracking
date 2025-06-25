@@ -23,4 +23,7 @@ services:
         sync: false
       - key: OX_PROXY_SERVER_ADDRESS
         sync: false
-
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: GOOGLE_CREDENTIALS_BASE64
+        sync: false
