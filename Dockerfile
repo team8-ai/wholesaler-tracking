@@ -52,4 +52,4 @@ RUN playwright install --with-deps chromium
 COPY src/ /app/src/
 
 # Entry point
-CMD ["python", "src/main.py"] 
+CMD ["python", "-m", "src.main"] 
