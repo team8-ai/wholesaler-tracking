@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import pandas as pd
@@ -16,7 +17,7 @@ def get_request_parameters():
     }
 
     # Cookies from cURL command
-    cookie_string = '_ga=GA1.1.379245868.1746610826; frontend_lang=en_US; tz=Asia/Jerusalem; im_livechat_session={"folded":false,"id":467,"message_unread_counter":0,"operator_pid":[37685,"Nate  Baker",false],"name":"Chat with Nate  Baker","uuid":"x8UNRxURud"}; im_livechat_auto_popup=false; im_livechat_previous_operator_pid=37685; session_id=6da0ad9edda2d80c5993a98f35213b8fe7b4fc2a; *ga*KSNYCY0H2M=GS2.1.s1747983040$o3$g1$t1747987489$j0$l0$h0'
+    cookie_string = f"""_ga=GA1.1.379245868.1746610826; frontend_lang=en_US; tz=Asia/Jerusalem; im_livechat_session={{"folded":false,"id":467,"message_unread_counter":0,"operator_pid":[37685,"Nate  Baker",false],"name":"Chat with Nate  Baker","uuid":"x8UNRxURud"}}; im_livechat_auto_popup=false; im_livechat_previous_operator_pid=37685; session_id={os.getenv('BLUPAX_SESSION_ID')}; *ga*KSNYCY0H2M=GS2.1.s1747983040$o3$g1$t1747987489$j0$l0$h0"""
     cookies = {}
     for cookie_pair in cookie_string.split('; '):
         if '=' in cookie_pair: # ensure there is a key-value pair
