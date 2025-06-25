@@ -1,7 +1,7 @@
 import dotenv
 import asyncio
 
-from scrapers import BlupaxScraper, ParmedScraper
+from .scrapers import BlupaxScraper, ParmedScraper
 
 dotenv.load_dotenv()
 

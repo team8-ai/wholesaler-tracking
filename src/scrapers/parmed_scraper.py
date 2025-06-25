@@ -1,8 +1,8 @@
 import json
 import asyncio
 
-from utils.core import make_http_request
-from utils.browser import get_parmed_token
+from ..utils.core import make_http_request
+from ..utils.browser import get_parmed_token
 from .base import BaseScraper
 
 

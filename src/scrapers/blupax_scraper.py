@@ -3,7 +3,7 @@ import re
 import json
 import asyncio
 
-from utils.core import make_http_request
+from ..utils.core import make_http_request
 from .base import BaseScraper
 
 
