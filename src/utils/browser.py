@@ -52,6 +52,8 @@ async def get_parmed_token():
         if launch_options is None:
             return None # Stop execution if proxy settings are not available
 
+        launch_options['chromium_sandbox'] = False
+
         browser_session_instance = BrowserSession(
             playwright=p,
             headless=True,
