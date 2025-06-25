@@ -5,7 +5,7 @@ services:
     runtime: docker
     schedule: "0 0 * * *"
     dockerfilePath: ./Dockerfile
-    dockerCommand: "python src/main.py"
+    dockerCommand: "python -m src.main"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.11"
