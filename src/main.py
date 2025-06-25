@@ -1,18 +1,21 @@
 import dotenv
 import asyncio
 
-from scrapers.blupax_scraper import main as run_blupax_scraper
-from scrapers.parmed_scraper import main as run_parmed_scraper
+from scrapers import BlupaxScraper, ParmedScraper
 
 dotenv.load_dotenv()
 
 
 async def main():
-    """Runs both scraping processes."""
-    print("Running Blupax scraper...")
-    run_blupax_scraper()
-    print("\nRunning Parmed scraper...")
-    await run_parmed_scraper()
+    """Runs both scraping processes concurrently."""
+    scrapers = [
+        BlupaxScraper(),
+        ParmedScraper()
+    ]
+
+    tasks = [scraper.run() for scraper in scrapers]
+    await asyncio.gather(*tasks)
+
     print("\nAll scraping processes finished.")
 
 
