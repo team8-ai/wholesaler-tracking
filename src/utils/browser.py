@@ -52,13 +52,12 @@ async def get_parmed_token():
         if launch_options is None:
             return None # Stop execution if proxy settings are not available
 
-        launch_options['chromium_sandbox'] = False
-
         browser_session_instance = BrowserSession(
             playwright=p,
             headless=True,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
-            launch_options=launch_options
+            chromium_sandbox=False,
+            **launch_options
         )
 
         await browser_session_instance.start()
