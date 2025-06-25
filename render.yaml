@@ -1,0 +1,14 @@
+# render.yaml
+services:
+  - type: cron
+    name: price-scraper
+    runtime: docker
+    plan: standard # Choose a plan that fits your needs
+    schedule: "0 0 * * *" # Run every day at midnight UTC
+    dockerfilePath: ./Dockerfile
+    dockerCommand: "python src/main.py"
+    envVars:
+      - key: PARMED_ACCESS_TOKEN
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1" 

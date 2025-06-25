@@ -1,0 +1,28 @@
+# Git
+.git
+.gitignore
+.github
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Data
+data/
+
+# Temp files
+temp/
+
+# IDE
+.vscode/
+.idea/ 

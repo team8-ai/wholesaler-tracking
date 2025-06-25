@@ -3,8 +3,8 @@ import pandas as pd
 import asyncio
 from dateutil.utils import today
 
-from utils import make_http_request
-from browser import get_parmed_token
+from utils.core import make_http_request
+from utils.browser import get_parmed_token
 
 
 def get_request_parameters(access_token):
@@ -58,7 +58,7 @@ def process_response_and_save(response, csv_filename):
             print(f"Found {len(item_list)} items under 'itemList'.")
             df = pd.DataFrame(item_list)
 
-            df.to_csv(f'./data/{csv_filename}', index=False)
+            df.to_csv(f'./data/raw/{csv_filename}', index=False)
             print(f"Data saved to {csv_filename}")
 
         except json.JSONDecodeError:

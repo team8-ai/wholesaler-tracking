@@ -1,8 +1,8 @@
 import dotenv
 import asyncio
 
-from blupax import main as run_blupax_scraper
-from parmed import main as run_parmed_scraper
+from scrapers.blupax_scraper import main as run_blupax_scraper
+from scrapers.parmed_scraper import main as run_parmed_scraper
 
 dotenv.load_dotenv()
 

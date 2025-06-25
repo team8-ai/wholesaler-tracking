@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from browser_use import Agent, BrowserSession
 from playwright.async_api import async_playwright, BrowserContext
 
-from utils import setup_proxy
+from .core import setup_proxy
 
 dotenv.load_dotenv()
 
