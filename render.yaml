@@ -3,12 +3,24 @@ services:
   - type: cron
     name: price-scraper
     runtime: docker
-    plan: standard # Choose a plan that fits your needs
-    schedule: "0 0 * * *" # Run every day at midnight UTC
+    schedule: "0 0 * * *"
     dockerfilePath: ./Dockerfile
     dockerCommand: "python src/main.py"
     envVars:
-      - key: PARMED_ACCESS_TOKEN
+      - key: PYTHON_VERSION
+        value: "3.11.11"
+      - key: OPENAI_API_KEY
         sync: false
-      - key: PYTHONUNBUFFERED
-        value: "1" 
+      - key: BLUPAX_SESSION_ID
+        sync: false
+      - key: PARMED_USERNAME
+        sync: false
+      - key: PARMED_PASSWORD
+        sync: false
+      - key: OX_USERNAME
+        sync: false
+      - key: OX_PASSWORD
+        sync: false
+      - key: OX_PROXY_SERVER_ADDRESS
+        sync: false
+
