@@ -7,3 +7,4 @@ __pycache__/
 temp/
 # Data files
 data/
+experiments/
