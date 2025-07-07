@@ -3,23 +3,43 @@ import requests
 from typing import Optional
 
 
-def setup_proxy():
+def setup_proxy(validate_proxy: bool = True):
     """Sets up proxy configuration from environment variables."""
     username: str | None = os.environ.get('OX_USERNAME')
     password: str | None = os.environ.get('OX_PASSWORD')
     proxy_server_address: str | None = os.environ.get('OX_PROXY_SERVER_ADDRESS')
 
     if proxy_server_address and username and password:
-        proxy_string = f"http://{username}:{password}@{proxy_server_address.split('//', 1)[-1]}"
+        # Clean the proxy server address and setup embedded credentials
+        clean_proxy_address = proxy_server_address.split('//', 1)[-1]
+        proxy_url_with_auth = f"http://{username}:{password}@{clean_proxy_address}"
         proxies = {
-            "http": proxy_string,
-            "https": proxy_string,
-            'username': username,
-            'password': password
+            "http": proxy_url_with_auth,
+            "https": proxy_url_with_auth,
         }
-        return proxies
+        
+        if not validate_proxy:
+            return {"proxies": proxies, "auth": None}
+        
+        # Validate proxy by testing connection to example.com
+        try:
+            print("Validating proxy configuration...")
+            test_response = requests.get(
+                "http://example.com", 
+                proxies=proxies,
+                timeout=10
+            )
+            test_response.raise_for_status()
+            print("Proxy validation successful!")
+            return {"proxies": proxies, "auth": None}
+        except requests.exceptions.RequestException as e:
+            print(f"Proxy validation failed: {e}")
+            print("⚠️  Returning proxy config anyway - it might still work for actual requests.")
+            return {"proxies": proxies, "auth": None}
+        
     else:
-        raise ValueError("Warning: OX_PROXY_SERVER_ADDRESS, OX_USERNAME, and OX_PASSWORD environment variables not set. Proceeding without proxy.")
+        raise ValueError("OX_PROXY_SERVER_ADDRESS, OX_USERNAME, and OX_PASSWORD environment variables must be set.")
+
 
 def make_http_request(method: str, url: str, headers: dict, cookies: Optional[dict] = None, data: Optional[dict] = None):
     """
@@ -31,10 +51,9 @@ def make_http_request(method: str, url: str, headers: dict, cookies: Optional[di
     - headers (dict): The headers to include in the request.
     - cookies (dict, optional): The cookies to include in the request.
     - data (dict, optional): The data to send in the request body (for POST requests).
-    - proxies (dict, optional): The proxy configuration to use for the request.
     """
-    """Makes an HTTP request (GET or POST) based on the specified method and returns the response."""
-    proxies = setup_proxy()
+    # Skip validation for actual requests to improve performance
+    proxy_config = setup_proxy(validate_proxy=False)
 
     try:
         response = requests.request(
@@ -43,7 +62,7 @@ def make_http_request(method: str, url: str, headers: dict, cookies: Optional[di
             headers=headers,
             cookies=cookies,
             json=data if method.upper() == "POST" else None,
-            proxies=proxies
+            proxies=proxy_config["proxies"]
         )
 
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
@@ -56,3 +75,9 @@ def make_http_request(method: str, url: str, headers: dict, cookies: Optional[di
     except ValueError as ve:
         print(ve)
         return None
+
+
+if __name__ == "__main__":
+    print("Testing proxy setup...")
+    proxy_config = setup_proxy(validate_proxy=True)
+    print("Proxy setup completed!")

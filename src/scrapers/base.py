@@ -1,14 +1,10 @@
 import os
-import io
 import abc
 import json
-import base64
-
-import pandas as pd
+import psycopg2
+from psycopg2.extras import execute_values
 from dateutil.utils import today
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
+from datetime import datetime, timezone
 
 
 class BaseScraper(abc.ABC):
@@ -33,56 +29,80 @@ class BaseScraper(abc.ABC):
         """
         raise NotImplementedError
 
-    def _save_to_csv(self, data: list[dict]):
-        """Saves the provided data to a file in Google Drive."""
+    def _save_to_postgres(self, data: list[dict]):
+        """Saves the provided data to the Postgres database."""
         if not data:
             print(f"No data found for {self.scraper_name}.")
             return
 
         print(f"Found {len(data)} items for {self.scraper_name}.")
-        df = pd.DataFrame(data)
 
-        creds_base64 = os.environ.get('GOOGLE_CREDENTIALS_BASE64')
-        folder_id = os.environ.get('GOOGLE_DRIVE_FOLDER_ID')
-
-        if not creds_base64 or not folder_id:
-            print("Skipping Google Drive upload: Credentials or folder ID not configured.")
+        # Postgres connection string from environment
+        pg_conn_str = os.environ.get("POSTGRES_CONNECTION_STRING")
+        if not pg_conn_str:
+            print("POSTGRES_CONNECTION_STRING is not set in environment variables.")
             return
 
+        # Table and columns per scraper
+        if self.scraper_name == "parmed":
+            table = '"wholesaler_tracking".parmed'
+            columns = [
+                "cin", "itemId", "sku", "description", "ndc", "manufacturer", "strength", "packQuantity", "color",
+                "unitOfSale", "form", "specialHandling", "labelSize", "brandName", "caseQty", "isCSOS", "gcn",
+                "temperature", "isBlocked", "hin", "price", "allocatedQuantity", "gcnCount", "isLowestPriceFlag",
+                "onOrder", "isWatchListItem", "isFavListItem", "unavailabilityReason", "ndc2", "isSubscriable",
+                "isSubscribed", "isNegotiable", "isNegotiated", "isNegotiatePending", "rtrnable_flg", "remsFlag",
+                "gtin", "shape", "he"
+            ]
+        elif self.scraper_name == "blupax":
+            table = '"wholesaler_tracking".blupax'
+            columns = [
+                "id", "wac", "awp", "unit_price", "price", "website_url", "ndc_formatted", "item_number",
+                "display_item_number", "description", "product_size", "manufacturer_name", "brand", "strength",
+                "is_available", "short_dated", "manufacturer_short_name", "expiration_date", "extension_date",
+                "quantity", "eta", "is_eta_delayed", "active", "is_short_dated", "cloudflare_image_url",
+                "branding_type", "generic_name", "can_add_to_cart", "create_date", "display_name", "lot_number",
+                "dosage_form", "item_group_filter", "availability_status", "show_short_dated_label",
+                "display_dea_class", "hide_dea_icon", "restricted_by_dea", "last_ordered_date", "is_wishlisted",
+                "is_gpi_restriction"
+            ]
+        else:
+            print(f"Unknown scraper name: {self.scraper_name}")
+            return
+
+        # Prepare rows for insertion
+        rows = []
+        for item in data:
+            row = [item.get(col) for col in columns]
+            rows.append(row)
+
+        insert_columns = ", ".join(columns)
+        placeholders = ", ".join(["%s"] * len(columns))
+        sql = f"INSERT INTO {table} ({insert_columns}, scraped_at) VALUES %s"
+
+        # Add scraped_at timestamp for each row
+        now = datetime.now(timezone.utc)
+        rows_with_ts = [tuple(row + [now]) for row in rows]
+
         try:
-            creds_json_str = base64.b64decode(creds_base64).decode('utf-8')
-            creds_info = json.loads(creds_json_str)
-            credentials = Credentials.from_service_account_info(
-                creds_info, scopes=["https://www.googleapis.com/auth/drive.file"]
-            )
-            service = build('drive', 'v3', credentials=credentials)
-
-            csv_buffer = io.BytesIO()
-            df.to_csv(csv_buffer, index=False)
-            csv_buffer.seek(0)
-
-            file_metadata = {'name': self.csv_filename, 'parents': [folder_id]}
-            media = MediaIoBaseUpload(
-                csv_buffer, mimetype='text/csv', resumable=True
-            )
-            
-            print(f"Uploading {self.csv_filename} to Google Drive...")
-            service.files().create(
-                body=file_metadata, media_body=media, fields='id'
-            ).execute()
-            print(f"Successfully uploaded {self.csv_filename} to Google Drive.")
-
+            conn = psycopg2.connect(dsn=pg_conn_str)
+            with conn:
+                with conn.cursor() as cur:
+                    execute_values(cur, sql, rows_with_ts)
+            print(f"Inserted {len(rows)} rows into {table}.")
         except Exception as e:
-            print(f"An error occurred while uploading to Google Drive: {e}")
-
+            print(f"An error occurred while inserting into Postgres: {e}")
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
     async def run(self):
         """Orchestrates the scraper's execution."""
         print(f"Running {self.scraper_name} scraper...")
         try:
             data = await self.get_data()
-            self._save_to_csv(data)
+            self._save_to_postgres(data)
         except Exception as e:
             print(f"An error occurred while running the {self.scraper_name} scraper: {e}")
         finally:
-            print(f"{self.scraper_name} scraper finished.") 
+            print(f"{self.scraper_name} scraper finished.")
