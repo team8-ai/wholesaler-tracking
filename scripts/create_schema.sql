@@ -48,10 +48,10 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.parmed (
 CREATE TABLE IF NOT EXISTS wholesaler_tracking.blupax (
     scraped_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     id TEXT,
-    wac NUMERIC,
-    awp NUMERIC,
-    unit_price NUMERIC,
-    price NUMERIC,
+    wac NUMERIC(10,4),
+    awp NUMERIC(10,4),
+    unit_price NUMERIC(10,4),
+    price NUMERIC(10,4),
     website_url TEXT,
     ndc_formatted TEXT,
     item_number TEXT,
@@ -62,12 +62,12 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.blupax (
     brand TEXT,
     strength TEXT,
     is_available BOOLEAN,
-    short_dated BOOLEAN,
+    short_dated TEXT,  -- Changed from BOOLEAN to TEXT to handle "Short dated" strings
     manufacturer_short_name TEXT,
-    expiration_date TIMESTAMPTZ,
-    extension_date TIMESTAMPTZ,
+    expiration_date TEXT,  -- Changed from TIMESTAMPTZ to DATE since sample data only shows dates
+    extension_date TEXT,   -- Changed from TIMESTAMPTZ to DATE
     quantity INTEGER,
-    eta TIMESTAMPTZ,
+    eta TEXT,
     is_eta_delayed BOOLEAN,
     active BOOLEAN,
     is_short_dated BOOLEAN,
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.blupax (
     branding_type TEXT,
     generic_name TEXT,
     can_add_to_cart BOOLEAN,
-    create_date TIMESTAMPTZ,
+    create_date TEXT,  -- Changed from TIMESTAMPTZ to DATE
     display_name TEXT,
     lot_number TEXT,
     dosage_form TEXT,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.blupax (
     display_dea_class TEXT,
     hide_dea_icon BOOLEAN,
     restricted_by_dea BOOLEAN,
-    last_ordered_date TIMESTAMPTZ,
+    last_ordered_date TEXT,
     is_wishlisted BOOLEAN,
     is_gpi_restriction BOOLEAN
 );
