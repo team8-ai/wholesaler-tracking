@@ -11,15 +11,14 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.parmed (
     ndc TEXT,
     manufacturer TEXT,
     strength TEXT,
-    packQuantity TEXT,
+    packQuantity INTEGER,
     color TEXT,
     unitOfSale TEXT,
     form TEXT,
     specialHandling TEXT,
     labelSize TEXT,
     brandName TEXT,
-    caseQty TEXT,
-    isCSOS BOOLEAN,
+    caseQty INTEGER,
     gcn TEXT,
     temperature TEXT,
     isBlocked BOOLEAN,
@@ -28,7 +27,7 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.parmed (
     allocatedQuantity INTEGER,
     gcnCount INTEGER,
     isLowestPriceFlag BOOLEAN,
-    onOrder BOOLEAN,
+    onOrder INTEGER,
     isWatchListItem BOOLEAN,
     isFavListItem BOOLEAN,
     unavailabilityReason TEXT,
@@ -38,12 +37,13 @@ CREATE TABLE IF NOT EXISTS wholesaler_tracking.parmed (
     isNegotiable BOOLEAN,
     isNegotiated BOOLEAN,
     isNegotiatePending BOOLEAN,
-    rtrnable_flg BOOLEAN,
-    remsFlag BOOLEAN,
+    rtrnable_flg TEXT,
+    remsFlag TEXT,
     gtin TEXT,
     shape TEXT,
     he TEXT
 );
+
 
 CREATE TABLE IF NOT EXISTS wholesaler_tracking.blupax (
     scraped_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

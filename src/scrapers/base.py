@@ -29,6 +29,22 @@ class BaseScraper(abc.ABC):
         """
         raise NotImplementedError
 
+    def _clean_null_bytes(self, value):
+        """Removes null bytes from string values to prevent PostgreSQL insertion errors."""
+        if isinstance(value, str):
+            return value.replace('\x00', '')
+        return value
+
+    def _clean_data(self, data: list[dict]) -> list[dict]:
+        """Cleans null bytes from all string values in the data."""
+        cleaned_data = []
+        for item in data:
+            cleaned_item = {}
+            for key, value in item.items():
+                cleaned_item[key] = self._clean_null_bytes(value)
+            cleaned_data.append(cleaned_item)
+        return cleaned_data
+
     def _save_to_postgres(self, data: list[dict]):
         """Saves the provided data to the Postgres database."""
         if not data:
@@ -36,6 +52,9 @@ class BaseScraper(abc.ABC):
             return
 
         print(f"Found {len(data)} items for {self.scraper_name}.")
+
+        # Clean data to remove null bytes
+        cleaned_data = self._clean_data(data)
 
         # Postgres connection string from environment
         pg_conn_str = os.environ.get("POSTGRES_CONNECTION_STRING")
@@ -48,9 +67,9 @@ class BaseScraper(abc.ABC):
             table = '"wholesaler_tracking".parmed'
             columns = [
                 "cin", "itemId", "sku", "description", "ndc", "manufacturer", "strength", "packQuantity", "color",
-                "unitOfSale", "form", "specialHandling", "labelSize", "brandName", "caseQty", "isCSOS", "gcn",
-                "temperature", "isBlocked", "hin", "price", "allocatedQuantity", "gcnCount", "isLowestPriceFlag",
-                "onOrder", "isWatchListItem", "isFavListItem", "unavailabilityReason", "ndc2", "isSubscriable",
+                "unitOfSale", "form", "specialHandling", "labelSize", "brandName", "caseQty", "gcn",
+                "temperature", "hin", "price", "allocatedQuantity", "gcnCount", "isLowestPriceFlag",
+                "isWatchListItem", "isFavListItem", "unavailabilityReason", "ndc2", "isSubscriable",
                 "isSubscribed", "isNegotiable", "isNegotiated", "isNegotiatePending", "rtrnable_flg", "remsFlag",
                 "gtin", "shape", "he"
             ]
@@ -72,7 +91,7 @@ class BaseScraper(abc.ABC):
 
         # Prepare rows for insertion
         rows = []
-        for item in data:
+        for item in cleaned_data:
             row = [item.get(col) for col in columns]
             rows.append(row)
 
