@@ -3,8 +3,18 @@ import requests
 from typing import Optional
 
 
-def setup_proxy(validate_proxy: bool = True):
-    """Sets up proxy configuration from environment variables."""
+def setup_proxy(validate_proxy: bool = True, browser_format: bool = False):
+    """
+    Sets up proxy configuration from environment variables.
+    
+    Args:
+        validate_proxy: Whether to validate the proxy connection
+        browser_format: If True, returns format suitable for browser/Playwright launch options
+    
+    Returns:
+        For HTTP requests (browser_format=False): {"proxies": {...}, "auth": None}
+        For browser usage (browser_format=True): {"proxy": {...}} or None on error
+    """
     username: str | None = os.environ.get('OX_USERNAME')
     password: str | None = os.environ.get('OX_PASSWORD')
     proxy_server_address: str | None = os.environ.get('OX_PROXY_SERVER_ADDRESS')
@@ -18,6 +28,20 @@ def setup_proxy(validate_proxy: bool = True):
             "https": proxy_url_with_auth,
         }
         
+        # For browser format, convert to Playwright-compatible format
+        if browser_format:
+            try:
+                proxy_dict = {
+                    "server": f"http://{clean_proxy_address}",
+                    "username": username,
+                    "password": password
+                }
+                return {"proxy": proxy_dict}
+            except Exception as e:
+                print(f"Error setting up proxy for browser: {e}")
+                return None
+        
+        # For HTTP requests format
         if not validate_proxy:
             return {"proxies": proxies, "auth": None}
         

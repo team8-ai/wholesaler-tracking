@@ -31,23 +31,10 @@ async def handle_request(route, browser_context: BrowserContext | None):
     await route.continue_()
 
 
-def get_proxy_settings():
-    proxies = setup_proxy()
-    launch_options = {}
-    proxy_string = proxies["http"]
-    address_part = proxy_string[len("http://"):]
-    server_address = address_part.split('@', 1)[-1]
-    proxy_dict = {"server": server_address}
-    proxy_dict["username"] = proxies['username']
-    proxy_dict["password"] = proxies['password']
-    launch_options['proxy'] = proxy_dict
-    return launch_options
-
-
 async def get_parmed_token():
     global captured_token
     async with async_playwright() as p:
-        launch_options = get_proxy_settings()
+        launch_options = setup_proxy(validate_proxy=False, browser_format=True)
 
         if launch_options is None:
             return None # Stop execution if proxy settings are not available
