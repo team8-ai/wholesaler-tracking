@@ -7,8 +7,11 @@ dotenv.load_dotenv()
 
 client = OpenAI()
 
-df = pd.read_csv('experiments/llm/product-report-full.csv')
-output_file = 'experiments/llm/product-report-top-1000-with-predictions.csv'
+dir_path = "experiments/generic-classification/"
+df = pd.read_csv(dir_path + 'product-report-full.csv')
+output_file = dir_path + 'product-report-top-1000-with-predictions.csv'
+
+print(df.shape)
 
 # Add new columns to the dataframe
 df['brand_status'] = None
@@ -16,7 +19,8 @@ df['generic_alternative_available'] = None
 df['generic_manufacturers'] = None
 df['reasoning'] = None
 
-# Iterate over all rows
+print(df.shape)
+
 for index, row in df.iterrows():
     print(f"Processing row {index + 1}/{len(df)}: {row['Product Description']}")
     
