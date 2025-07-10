@@ -7,7 +7,6 @@ __pycache__/
 temp/
 # Data files
 data/
-*.csv
 *.json
 *.txt
 *.ipynb
