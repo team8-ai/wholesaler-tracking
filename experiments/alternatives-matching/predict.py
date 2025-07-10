@@ -8,9 +8,9 @@ from openai import OpenAI
 dotenv.load_dotenv()
 
 client = OpenAI()
-dir_path = "experiments/matching/"
+dir_path = "experiments/alternatives-matching/"
 
-df = pd.read_csv(dir_path + "product-report-top-1000-processed.csv")
+df = pd.read_csv(dir_path + "product-report-top-1000-preprocessed.csv")
 output_file = dir_path + "product-report-top-1000-alternative-predictions.csv"
 
 df_parmed = pd.read_csv(dir_path + "unique_parmed_samples.csv")

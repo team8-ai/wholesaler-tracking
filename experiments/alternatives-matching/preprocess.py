@@ -2,11 +2,14 @@
 import json
 import pandas as pd
 
-dir_path = "experiments/matching/"
+dir_path = "experiments/alternatives-matching/"
 
 df_parmed = pd.read_csv(dir_path + "unique_parmed_samples.csv")
 df_blupax = pd.read_csv(dir_path + "unique_blupax_samples.csv")
-df_report = pd.read_csv(dir_path + "product-report-top-1000-with-predictions.csv", low_memory=False)
+df_report = pd.read_csv(dir_path + "product-report-top-1000-generic-predictions.csv", low_memory=False)
+
+output_file = dir_path + "product-report-top-1000-preprocessed.csv"
+
 print(df_parmed.shape)
 print(df_blupax.shape)
 print(df_report.shape)
@@ -67,4 +70,4 @@ for idx, row in df_report.iterrows():
 print(df_report[['found_parmed', 'found_blupax']].value_counts())
 
 # %%
-df_report.to_csv(dir_path + "product-report-top-1000-processed.csv", index=False)
+df_report.to_csv(output_file, index=False)
